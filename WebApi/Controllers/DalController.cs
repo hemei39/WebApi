@@ -95,5 +95,42 @@ namespace WebApi.Controllers
                 return response;
             }
         }
+
+        [HttpPost]
+        [HttpOptions]
+        public int AddToCart([FromBody] Cart cart)
+        {
+            if (cart != null)
+            {
+                using (NorthwindEntities context = new NorthwindEntities())
+                {
+                    Cart cartDB = context.Carts
+                        .Where(c => c.Username == cart.Username && c.ProductID == cart.ProductID)
+                        .FirstOrDefault();
+
+                    if (cartDB == null)
+                    {
+                        context.Carts.Add(cart);
+                    }
+                    else
+                    {
+                        cartDB.Quantity += cart.Quantity;
+                    }
+
+                    context.SaveChanges();
+
+                    int count = context.Carts
+                        .Where(c => c.Username == cart.Username)
+                        .Sum(c => c.Quantity);
+
+                    return count;
+                }           
+
+            }
+            else
+            {
+                return -1;
+            }
+        }
     }
 }
